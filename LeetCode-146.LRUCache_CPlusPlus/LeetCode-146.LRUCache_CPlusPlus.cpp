@@ -13,25 +13,26 @@ private:
     public:
 
         int value;
-        list<int>::iterator iter;
+        list<short>::iterator iter;
 
         Data() {}
 
-        Data(int val, list<int>::iterator it)
+        Data(int val, list<short>::iterator it)
             :value(val), iter(it)
         {
         }
     };
 
 
-    list<int> ls;
-    map<int, Data> values = map<int, Data>();
+    list<short> ls;
+    map<short, Data> values = map<short, Data>();
     short cap = 0;
-    map<int, Data>::iterator tempIter;
+    map<short, Data>::iterator tempIter;
+    list<short>::iterator lastIter;
 public:
     LRUCache(int capacity) {
         cap = capacity;
-        ls = list<int>(capacity);
+        ls = list<short>(capacity);
     }
 
     int get(int key) {
@@ -39,10 +40,13 @@ public:
         if (tempIter == values.end())
             return -1;
 
-        ls.erase(tempIter->second.iter);
-
-        ls.push_back(key);
-        tempIter->second.iter = --ls.end();
+        if (*lastIter != key)
+        {
+            ls.erase(tempIter->second.iter);
+            ls.push_back(key);
+            lastIter = --ls.end();
+            tempIter->second.iter = lastIter;
+        }
 
         return tempIter->second.value;
     }
@@ -52,10 +56,14 @@ public:
         tempIter = values.find(key);
         if (tempIter != values.end())
         {
-            ls.erase(tempIter->second.iter);
-            ls.push_back(key);
+            if (*lastIter != key)
+            {
+                ls.erase(tempIter->second.iter);
+                ls.push_back(key);
+                lastIter = --ls.end();
+                tempIter->second.iter = lastIter;
+            }
             tempIter->second.value = value;
-            tempIter->second.iter = --ls.end();
             return;
         }
 
@@ -66,26 +74,10 @@ public:
         }
 
         ls.push_back(key);
-        values[key] = Data(value, --ls.end());
+        lastIter = --ls.end();
+        values[key] = Data(value, lastIter);
     }
 };
-
-string ArrayToString(const vector<int>& input)
-{
-    string output = "";
-    char buffer[16] = "";
-
-    for (int i = 0; i < input.size(); ++i)
-    {
-        if (i != 0)
-            output += ", ";
-
-        _itoa_s(input[i], buffer, 10);
-        output += buffer;
-    }
-
-    return output;
-}
 
 int main()
 {
